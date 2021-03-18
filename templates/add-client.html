@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div>
+    <div class="nav-bar-container">
+      <a href="/form">Add Employee</a>
+      <a href="/add-client">Add Client</a>
+      <a href="/add-client-trial">Add Client Trial</a>
+    </div>
+  </div>
+
+  <h2>Add Client</h2>
+  <form action="/add-client" method = "POST">
+    <p>First Name: <input type = "text" name = "firstname" /></p>
+    <p>Last Name: <input type = "text" name = "lastname" /></p>
+    <p>Age: <input type = "text" name = "age" /></p>
+    <p>Gender: <input type = "text" name = "gender" /></p>
+    <p>Supervisor: <input type = "text" name = "supervisor" /></p>
+    <p><input type = "submit" value = "Submit" /></p>
+ </form>
+
+</body>
+</html>
