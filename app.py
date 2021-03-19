@@ -15,7 +15,6 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
  
 mysql = MySQL(app)
-8 
 @app.route('/')
 def home():
   return render_template('home.html')
@@ -81,6 +80,14 @@ def clients():
     cursor.execute("SELECT * FROM client")
     clients = cursor.fetchall()
     return(jsonify(clients))
+
+@app.route('/clients/<id>', methods=['GET'])
+def individual_client(id):
+    client_id = id
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM client WHERE client_id = %s", [client_id])
+    client = cursor.fetchone()
+    return(jsonify(client))
         
 if __name__ == '__main__':
     app.run(debug=True)
