@@ -1,4 +1,5 @@
 import os
+import bcrypt
 from flask import Flask,render_template, request, jsonify
 from flask_mysqldb import MySQL
 from flask_cors import CORS
@@ -14,7 +15,7 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
  
 mysql = MySQL(app)
- 
+8 
 @app.route('/')
 def home():
   return render_template('home.html')
@@ -25,9 +26,10 @@ def form():
     if request.method == 'POST':
         email = request.form['email']
         password = request.form['password']
+        hashed = bcrypt.hashpw(password.encode(encoding = "UTF-8"), bcrypt.gensalt())
         permissions = request.form['permissions']
         cursor = mysql.connection.cursor()
-        cursor.execute("INSERT INTO employees(Employees_email, Employees_password, Employee_permissions) VALUES(%s, %s)", (email, password, permissions))
+        cursor.execute("INSERT INTO employees(Employees_email, Employees_password, Employees_permissions) VALUES(%s, %s, %s)", (email, hashed, permissions))
         mysql.connection.commit()
         cursor.close()
         return "DONE!"
@@ -57,17 +59,28 @@ def add_client():
 def login():
     username = request.json['username']
     password = request.json['password']
-    print(username['username'], password['password'])
     cursor = mysql.connection.cursor()
-    cursor.execute("SELECT Employees_id, Employees_permissions FROM employees WHERE Employees_email = %s AND Employees_password = %s", (username['username'], password['password']))
+    cursor.execute("SELECT Employees_id, Employees_permissions, Employees_password FROM employees WHERE Employees_email = %s",[ username['username'] ])
     account = cursor.fetchone()
-    print(account)
-    if account:
-        return(account)
+    data = {
+        "id": account["Employees_id"],
+        "permissions": account["Employees_permissions"]
+    }
+    c_password = password["password"]
+    password_check = c_password.encode(encoding = "UTF-8")
+    stored_password = account["Employees_password"]
+    stored_password_check = stored_password.encode(encoding = "UTF-8")
+    if bcrypt.checkpw(password_check, stored_password_check):
+        return(data)
     else:
         return("Incorrect Username or Password")
 
-
+@app.route('/clients', methods=['GET'])
+def clients():
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM client")
+    clients = cursor.fetchall()
+    return(jsonify(clients))
         
 if __name__ == '__main__':
     app.run(debug=True)
