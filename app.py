@@ -36,22 +36,28 @@ def form():
     else:
         return render_template('form.html')
  
-@app.route('/add-client', methods=['GET', 'POST'])
-def add_client():
-    if request.method == 'POST':
-        firstname = request.form['firstname']
-        lastname = request.form['lastname']
-        age = request.form['age']
-        gender = request.form['gender']
-        supervisor = request.form['supervisor']
-        cursor = mysql.connection.cursor()
-        cursor.execute("INSERT INTO client(client_firstname, client_lastname, client_age, client_gender, client_supervisor) VALUES(%s, %s, %s, %s, %s)", (firstname, lastname, age, gender, supervisor))
-        mysql.connection.commit()
-        cursor.close()
-        return "DONE!"
-    
-    else:
-        return render_template('add-client.html')
+# @app.route('/add-client', methods=['GET', 'POST'])
+# def add_client():
+#     if request.method == 'POST':
+#         firstname = request.form['firstname']
+#         lastname = request.form['lastname']
+#         age = request.form['age']
+#         gender = request.form['gender']
+#         supervisor = request.form['supervisor']
+#         cursor = mysql.connection.cursor()
+#         cursor.execute("INSERT INTO client(client_firstname, client_lastname, client_age, client_gender, client_supervisor) VALUES(%s, %s, %s, %s, %s)", (firstname, lastname, age, gender, supervisor))
+#         mysql.connection.commit()
+#         cursor.close()
+#         cursor = mysql.connection.cursor()
+#         cursor.execute("SELECT * FROM client WHERE client_firstname = %s AND client_lastname = %s AND client_age = %s AND client_gender = %s AND client_supervisor = %s ORDER BY client_id DESC", (firstname, lastname, age, gender, supervisor))
+#         data = cursor.fetchone()
+#         print(data)
+#         client_id = data['client_id']
+#         cursor.close()
+#         print(client_id)
+#         return "Done"
+#     else:
+#         return render_template('add-client.html')
 
 
 @app.route('/login', methods=['POST'])
@@ -88,6 +94,41 @@ def individual_client(id):
     cursor.execute("SELECT * FROM client WHERE client_id = %s", [client_id])
     client = cursor.fetchone()
     return(jsonify(client))
+
+@app.route('/add-client', methods=['POST'])
+def add_a_client():
+    firstname = request.json['firstName']
+    lastname = request.json['lastName']
+    age = request.json['age']
+    gender = request.json['gender']
+    supervisor = request.json['supervisor']
+    addressOne = request.json['addressOne']
+    addressTwo = request.json['addressTwo']
+    city = request.json['city']
+    state = request.json['st']
+    postal_code = request.json['postalCode']
+    cursor = mysql.connection.cursor()
+    cursor.execute("INSERT INTO client(client_firstname, client_lastname, client_age, client_gender, client_supervisor) VALUES(%s, %s, %s, %s, %s)", (firstname, lastname, age, gender, supervisor))
+    mysql.connection.commit()
+    cursor.close()
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM client WHERE client_firstname = %s AND client_lastname = %s AND client_age = %s AND client_gender = %s AND client_supervisor = %s ORDER BY client_id DESC", (firstname, lastname, age, gender, supervisor))
+    data = cursor.fetchone()
+    client_id = data['client_id']
+    cursor.close()
+    cursor = mysql.connection.cursor()
+    cursor.execute("INSERT INTO addresses(addresses_one, addresses_two, addresses_city, addresses_state, addresses_postal_code, addresses_client_id) VALUES(%s, %s, %s, %s, %s, %s)", (addressOne, addressTwo, city, state, postal_code, client_id))
+    mysql.connection.commit()
+    cursor.close()
+    return ("Address Added for", client_id)
+
+@app.route("/get-client-address/<id>", methods=['GET'])
+def get_client_address(id):
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM addresses WHERE addresses_client_id = %s", [id])
+    data = cursor.fetchone()
+    return(jsonify(data))
+
         
 if __name__ == '__main__':
     app.run(debug=True)
