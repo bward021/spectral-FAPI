@@ -129,6 +129,42 @@ def get_client_address(id):
     data = cursor.fetchone()
     return(jsonify(data))
 
+@app.route("/add-client-trial/<id>", methods=['POST'])
+def add_client_trial(id):
+    trial_name = request.json['name']
+    trial_category = request.json['category']
+    trial_description = request.json['description']
+    client_id = id
+    cursor = mysql.connection.cursor()
+    cursor.execute("INSERT INTO trial(trial_name, trial_category, trial_description, trial_client_id) VALUES(%s, %s, %s, %s)", (trial_name, trial_category, trial_description, client_id))
+    mysql.connection.commit()
+    cursor.close()
+    return "Added"
+
+
+@app.route("/add-client-frequency/<id>", methods=['POST'])
+def add_client_frequency(id):
+    frequency_name = request.json['name']
+    frequency_description = request.json['description']
+    client_id = id
+    cursor = mysql.connection.cursor()
+    cursor.execute("INSERT INTO frequency(frequency_name, frequency_description, frequency_client_id) VALUES(%s, %s, %s)", (frequency_name, frequency_description, client_id))
+    mysql.connection.commit()
+    cursor.close()
+    return "Added"
+
+
+@app.route("/add-client-duration/<id>", methods=['POST'])
+def add_client_duration(id):
+    duration_name = request.json['name']
+    duration_description = request.json['description']
+    client_id = id
+    cursor = mysql.connection.cursor()
+    cursor.execute("INSERT INTO duration(duration_name, duration_description, duration_client_id) VALUES(%s, %s, %s)", (duration_name, duration_description, client_id))
+    mysql.connection.commit()
+    cursor.close()
+    return "Added"
+
         
 if __name__ == '__main__':
     app.run(debug=True)
