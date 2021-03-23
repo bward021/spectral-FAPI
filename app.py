@@ -181,7 +181,6 @@ def update_frequency_instance(id):
     id = id
     data = request.json['data']
     date = request.json['date']
-    print(data, date)
     cursor = mysql.connection.cursor()
     cursor.execute("UPDATE frequency_instance SET frequency_instance_data = %s WHERE frequency_instance_frequency_id = %s AND frequency_instance_date = %s;", (data, id, date))
     mysql.connection.commit()
