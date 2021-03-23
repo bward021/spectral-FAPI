@@ -9,6 +9,7 @@ flask-mysqldb = "*"
 python-dotenv = "*"
 flask-cors = "*"
 bcrypt = "*"
+datetime = "*"
 
 [dev-packages]
 

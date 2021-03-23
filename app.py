@@ -3,9 +3,10 @@ import bcrypt
 from flask import Flask,render_template, request, jsonify
 from flask_mysqldb import MySQL
 from flask_cors import CORS
+from datetime import datetime
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True)
  
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
@@ -36,30 +37,6 @@ def form():
     else:
         return render_template('form.html')
  
-# @app.route('/add-client', methods=['GET', 'POST'])
-# def add_client():
-#     if request.method == 'POST':
-#         firstname = request.form['firstname']
-#         lastname = request.form['lastname']
-#         age = request.form['age']
-#         gender = request.form['gender']
-#         supervisor = request.form['supervisor']
-#         cursor = mysql.connection.cursor()
-#         cursor.execute("INSERT INTO client(client_firstname, client_lastname, client_age, client_gender, client_supervisor) VALUES(%s, %s, %s, %s, %s)", (firstname, lastname, age, gender, supervisor))
-#         mysql.connection.commit()
-#         cursor.close()
-#         cursor = mysql.connection.cursor()
-#         cursor.execute("SELECT * FROM client WHERE client_firstname = %s AND client_lastname = %s AND client_age = %s AND client_gender = %s AND client_supervisor = %s ORDER BY client_id DESC", (firstname, lastname, age, gender, supervisor))
-#         data = cursor.fetchone()
-#         print(data)
-#         client_id = data['client_id']
-#         cursor.close()
-#         print(client_id)
-#         return "Done"
-#     else:
-#         return render_template('add-client.html')
-
-
 @app.route('/login', methods=['POST'])
 def login():
     username = request.json['username']
@@ -120,7 +97,7 @@ def add_a_client():
     cursor.execute("INSERT INTO addresses(addresses_one, addresses_two, addresses_city, addresses_state, addresses_postal_code, addresses_client_id) VALUES(%s, %s, %s, %s, %s, %s)", (addressOne, addressTwo, city, state, postal_code, client_id))
     mysql.connection.commit()
     cursor.close()
-    return ("Address Added for", client_id)
+    return ("Client Added")
 
 @app.route("/get-client-address/<id>", methods=['GET'])
 def get_client_address(id):
@@ -165,6 +142,51 @@ def add_client_duration(id):
     cursor.close()
     return "Added"
 
+@app.route("/get-frequency/<id>", methods=['GET'])
+def get_frequency(id):
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM frequency WHERE frequency_client_id = %s", [id])
+    data = cursor.fetchall()
+    return (jsonify(data))
+
+@app.route("/get-frequency-instance", methods=['GET'])
+def get_frequency_instance():
+    if request.args['date']:
+        date = request.args['date']
+        id = request.args['id']
+    else:
+        return "GET request is missing arguements"
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM frequency_instance WHERE frequency_instance_date = %s AND frequency_instance_frequency_id = %s;", (date, id))
+    data = cursor.fetchone()
+    cursor.close()
+    if data:
+        return (data)
+    else:
+        return "No data found"
+
+@app.route("/new-frequency-instance", methods=['POST'])
+def new_frequency_instance():
+    id = request.json['id']
+    date = request.json['date']
+    data = request.json['data']
+    cursor = mysql.connection.cursor()
+    cursor.execute("INSERT INTO frequency_instance(frequency_instance_data, frequency_instance_date, frequency_instance_frequency_id) VALUES(%s, %s, %s);", (data, date, id))
+    mysql.connection.commit()
+    cursor.close()
+    return "Added"
+
+@app.route("/update-frequency-instance/<id>", methods=['PATCH'])
+def update_frequency_instance(id):
+    id = id
+    data = request.json['data']
+    date = request.json['date']
+    print(data, date)
+    cursor = mysql.connection.cursor()
+    cursor.execute("UPDATE frequency_instance SET frequency_instance_data = %s WHERE frequency_instance_frequency_id = %s AND frequency_instance_date = %s;", (data, id, date))
+    mysql.connection.commit()
+    cursor.close()
+    return "Updated"
         
 if __name__ == '__main__':
     app.run(debug=True)
