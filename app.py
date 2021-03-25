@@ -276,5 +276,13 @@ def new_duration_instance():
     cursor.close()
     return "Added"
 
+@app.route("/get-all-employees", methods=['GET'])
+def get_all_employees():
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT employees_id, employees_first_name, employees_last_name, employees_email, employees_permissions FROM employees")
+    data = cursor.fetchall()
+    cursor.close()
+    return (jsonify(data))
+
 if __name__ == '__main__':
     app.run(debug=True)
