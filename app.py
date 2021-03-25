@@ -186,6 +186,76 @@ def update_frequency_instance(id):
     mysql.connection.commit()
     cursor.close()
     return "Updated"
-        
+
+@app.route("/get-all-client-trials/<id>", methods=['GET'])
+def get_all_client_trials(id):
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM trial WHERE trial_client_id = %s", [id])
+    data = cursor.fetchall()
+    cursor.close()
+    return (jsonify(data))
+
+@app.route("/check-trial-instance", methods=['GET'])
+def check_trial_instance():
+    if request.args['date']:
+        date = request.args['date']
+        id = request.args['id']
+    else:
+        return "GET request is missing arguements"
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM trial_instance WHERE trial_instance_date = %s AND trial_instance_trial_id = %s;", (date, id))
+    data = cursor.fetchone()
+    cursor.close()
+    if data:
+        return (data)
+    else:
+        return "No data found"
+
+@app.route("/new-trial-instance", methods=['POST'])
+def new_trial_instance():
+    id = request.json['id']
+    date = request.json['date']
+    incorrect = request.json['incorrect']
+    prompted = request.json['prompted']
+    correct = request.json['correct']
+    cursor = mysql.connection.cursor()
+    cursor.execute("INSERT INTO trial_instance(trial_instance_correct, trial_instance_prompted, trial_instance_incorrect, trial_instance_date, trial_instance_trial_id) VALUES(%s, %s, %s, %s, %s);", (correct, prompted, incorrect, date, id))
+    mysql.connection.commit()
+    cursor.close()
+    return "Added"
+
+@app.route("/update-trial-instance-incorrect", methods=['PATCH'])
+def update_trial_instance_incorrect():
+    id = request.json['id']
+    data = request.json['data']
+    date = request.json['date']
+    cursor = mysql.connection.cursor()
+    cursor.execute("UPDATE trial_instance SET trial_instance_incorrect = %s WHERE trial_instance_trial_id = %s AND trial_instance_date = %s;", (data, id, date))
+    mysql.connection.commit()
+    cursor.close()
+    return "Updated"
+
+@app.route("/update-trial-instance-prompted", methods=['PATCH'])
+def update_trial_instance_prompted():
+    id = request.json['id']
+    data = request.json['data']
+    date = request.json['date']
+    cursor = mysql.connection.cursor()
+    cursor.execute("UPDATE trial_instance SET trial_instance_prompted = %s WHERE trial_instance_trial_id = %s AND trial_instance_date = %s;", (data, id, date))
+    mysql.connection.commit()
+    cursor.close()
+    return "Updated"
+
+@app.route("/update-trial-instance-correct", methods=['PATCH'])
+def update_trial_instance_correct():
+    id = request.json['id']
+    data = request.json['data']
+    date = request.json['date']
+    cursor = mysql.connection.cursor()
+    cursor.execute("UPDATE trial_instance SET trial_instance_correct = %s WHERE trial_instance_trial_id = %s AND trial_instance_date = %s;", (data, id, date))
+    mysql.connection.commit()
+    cursor.close()
+    return "Updated"
+
 if __name__ == '__main__':
     app.run(debug=True)
