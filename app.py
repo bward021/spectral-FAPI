@@ -257,5 +257,24 @@ def update_trial_instance_correct():
     cursor.close()
     return "Updated"
 
+@app.route("/get-all-client-duration/<id>", methods=['GET'])
+def get_all_client_duration(id):
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * FROM duration WHERE duration_client_id = %s", [id])
+    data = cursor.fetchall()
+    cursor.close()
+    return (jsonify(data))
+
+@app.route("/new-duration-instance", methods=['POST'])
+def new_duration_instance():
+    id = request.json['id']
+    date = request.json['date']
+    data = request.json['data']
+    cursor = mysql.connection.cursor()
+    cursor.execute("INSERT INTO duration_instance(duration_instance_time, duration_instance_date, duration_instance_duration_id) VALUES(%s, %s, %s);", (data, date, id))
+    mysql.connection.commit()
+    cursor.close()
+    return "Added"
+
 if __name__ == '__main__':
     app.run(debug=True)
