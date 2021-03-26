@@ -8,7 +8,7 @@ from datetime import datetime
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
  
-app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_HOST'] = os.environ.get('MYSQL_HOST') or 'localhost'
 app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = os.environ.get("PASSWORD")
 app.config['MYSQL_DB'] = 'spectral'
@@ -280,6 +280,59 @@ def new_duration_instance():
 def get_all_employees():
     cursor = mysql.connection.cursor()
     cursor.execute("SELECT employees_id, employees_first_name, employees_last_name, employees_email, employees_permissions FROM employees")
+    data = cursor.fetchall()
+    cursor.close()
+    return (jsonify(data))
+
+
+@app.route("/delete-employee", methods=['POST'])
+def delete_employee():
+    id = request.json['id']
+    cursor = mysql.connection.cursor()
+    cursor.execute("DELETE FROM employees WHERE employees_id = %s", [id])
+    cursor.connection.commit()
+    cursor.close()
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * from employees")
+    data = cursor.fetchall()
+    cursor.close()
+    return (jsonify(data))
+
+
+@app.route("/edit-employee", methods=['PATCH'])
+def edit_employee():
+    id = request.json['id']
+    firstname = request.json['firstname']
+    lastname = request.json['lastname']
+    email = request.json['email']
+    password = request.json['password']
+    hashed = bcrypt.hashpw(password.encode(encoding = "UTF-8"), bcrypt.gensalt())
+    permissions = request.json['permissions']
+    cursor = mysql.connection.cursor()
+    cursor.execute("UPDATE employees SET employees_first_name = %s, employees_last_name = %s, employees_email = %s, employees_password= %s, employees_permissions = %s WHERE employees_id = %s;", (firstname, lastname, email, hashed, permissions, id))
+    cursor.connection.commit()
+    cursor.close()
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * from employees")
+    data = cursor.fetchall()
+    cursor.close()
+    return (jsonify(data))
+
+
+@app.route("/add-employee", methods=['POST'])
+def add_employee():
+    firstname = request.json['firstname']
+    lastname = request.json['lastname']
+    email = request.json['email']
+    password = request.json['password']
+    hashed = bcrypt.hashpw(password.encode(encoding = "UTF-8"), bcrypt.gensalt())
+    permissions = request.json['permissions']
+    cursor = mysql.connection.cursor()
+    cursor.execute("INSERT INTO employees(employees_first_name, employees_last_name, employees_email, employees_password, employees_permissions) VALUES(%s, %s, %s, %s, %s);", (firstname, lastname, email, hashed, permissions))
+    cursor.connection.commit()
+    cursor.close()
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT * from employees")
     data = cursor.fetchall()
     cursor.close()
     return (jsonify(data))
