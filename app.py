@@ -10,7 +10,7 @@ CORS(app, supports_credentials=True)
  
 app.config['MYSQL_HOST'] = os.environ.get('MY_HOST') or 'localhost'
 app.config['MYSQL_USER'] = os.environ.get('USERNAME') or 'root'
-app.config['MYSQL_PASSWORD'] = os.environ.get('PASSWORD') or os.environ.get("PASSWORD")
+app.config['MYSQL_PASSWORD'] = os.environ.get('CLEARDB_PASSWORD') or os.environ.get("PASSWORD")
 app.config['MYSQL_DB'] = os.environ.get('MY_DB') or 'spectral'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
