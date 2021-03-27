@@ -7,6 +7,7 @@ from datetime import timedelta
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
+app.secret_key = os.environ.get('SECRET_KEY')
  
 app.config['MYSQL_HOST'] = os.environ.get('MY_HOST') or 'localhost'
 app.config['MYSQL_USER'] = os.environ.get('USERNAME') or 'root'
