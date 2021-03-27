@@ -1,9 +1,9 @@
 import os
 import bcrypt
-from flask import Flask,render_template, request, jsonify
+from flask import Flask,render_template, request, jsonify, session
 from flask_mysqldb import MySQL
 from flask_cors import CORS
-from datetime import datetime
+from datetime import timedelta
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -14,6 +14,7 @@ app.config['MYSQL_PASSWORD'] = os.environ.get('CLEARDB_PASSWORD') or os.environ.
 app.config['MYSQL_DB'] = os.environ.get('MY_DB') or 'spectral'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 
+app.permanent_session_lifetime = timedelta(hours=3)
  
 mysql = MySQL(app)
 @app.route('/')
@@ -42,17 +43,22 @@ def login():
     username = request.json['username']
     password = request.json['password']
     cursor = mysql.connection.cursor()
-    cursor.execute("SELECT Employees_id, Employees_permissions, Employees_password FROM employees WHERE Employees_email = %s",[ username['username'] ])
+    cursor.execute("SELECT employees_id, employees_permissions, employees_password FROM employees WHERE employees_email = %s",[ username['username'] ])
     account = cursor.fetchone()
     data = {
-        "id": account["Employees_id"],
-        "permissions": account["Employees_permissions"]
+        "id": account["employees_id"],
+        "permissions": account["employees_permissions"]
     }
     c_password = password["password"]
     password_check = c_password.encode(encoding = "UTF-8")
     stored_password = account["Employees_password"]
     stored_password_check = stored_password.encode(encoding = "UTF-8")
     if bcrypt.checkpw(password_check, stored_password_check):
+        session.permanent = True
+        session['loggedin'] = True
+        session['id'] = data['id']
+        session['username'] = username
+        session['permissions'] = data['permissions']
         return(data)
     else:
         return("Incorrect Username or Password")
