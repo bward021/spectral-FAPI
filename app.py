@@ -51,7 +51,7 @@ def login():
     }
     c_password = password["password"]
     password_check = c_password.encode(encoding = "UTF-8")
-    stored_password = account["Employees_password"]
+    stored_password = account["employees_password"]
     stored_password_check = stored_password.encode(encoding = "UTF-8")
     if bcrypt.checkpw(password_check, stored_password_check):
         session.permanent = True
