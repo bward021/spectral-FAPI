@@ -1,21 +1,25 @@
 import os
 import bcrypt
-from flask import Flask,render_template, request, jsonify, session
+from flask import Flask,render_template, request, jsonify, session, make_response
 from flask_mysqldb import MySQL
 from flask_cors import CORS
 from datetime import timedelta
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
-app.secret_key = os.environ.get('SECRET_KEY')
+app.secret_key = os.environ.get('SECRET_KEY') or "secret"
  
-app.config['MYSQL_HOST'] = os.environ.get('MY_HOST') or 'localhost'
-app.config['MYSQL_USER'] = os.environ.get('USERNAME') or 'root'
-app.config['MYSQL_PASSWORD'] = os.environ.get('CLEARDB_PASSWORD') or os.environ.get("PASSWORD")
-app.config['MYSQL_DB'] = os.environ.get('MY_DB') or 'spectral'
-app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+app.config['MYSQL_HOST'] = 'localhost' #os.environ.get('MY_HOST') or 'localhost'
+app.config['MYSQL_USER'] = 'root' #os.environ.get('USERNAME') or 'root'
+app.config['MYSQL_PASSWORD'] = os.environ.get("PASSWORD") #os.environ.get('CLEARDB_PASSWORD') or os.environ.get("PASSWORD")
+app.config['MYSQL_DB'] = 'spectral' #os.environ.get('MY_DB') or 'spectral'
 
-app.permanent_session_lifetime = timedelta(hours=3)
+app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+
+app.permanent_session_lifetime = timedelta(minutes=20)
  
 mysql = MySQL(app)
 @app.route('/')
@@ -50,19 +54,34 @@ def login():
         "id": account["employees_id"],
         "permissions": account["employees_permissions"]
     }
+    if account:
+        session.permanent = True
+        session['id'] = data['id']
     c_password = password["password"]
     password_check = c_password.encode(encoding = "UTF-8")
     stored_password = account["employees_password"]
     stored_password_check = stored_password.encode(encoding = "UTF-8")
+    print(session)
+    print(session['id'])
     if bcrypt.checkpw(password_check, stored_password_check):
-        session.permanent = True
-        session['loggedin'] = True
-        session['id'] = data['id']
-        session['username'] = username
-        session['permissions'] = data['permissions']
         return(data)
     else:
         return("Incorrect Username or Password")
+
+@app.route("/api/v1/logged-in", methods=["GET"])
+def logged_in():
+    print(session['id'])
+    print(session)
+    if 'id' in session:
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT * FROM employees WHERE employees_id = %s",  session['id'])
+        account = cursor.fetchone()
+        if account:
+            return jsonify("User logged in via cookie")
+        else:
+            return jsonify("Something is Wrong")
+    else:
+        return "nope"
 
 @app.route('/clients', methods=['GET'])
 def clients():
