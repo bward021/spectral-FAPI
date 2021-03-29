@@ -314,7 +314,7 @@ def get_all_employees():
     return (jsonify(data))
 
 
-@app.route("/delete-employee", methods=['POST'])
+@app.route("/delete-employee", methods=['DELETE'])
 def delete_employee():
     id = request.json['id']
     cursor = mysql.connection.cursor()
