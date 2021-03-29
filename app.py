@@ -61,8 +61,6 @@ def login():
     password_check = c_password.encode(encoding = "UTF-8")
     stored_password = account["employees_password"]
     stored_password_check = stored_password.encode(encoding = "UTF-8")
-    print(session)
-    print(session['id'])
     if bcrypt.checkpw(password_check, stored_password_check):
         return(data)
     else:
@@ -70,18 +68,23 @@ def login():
 
 @app.route("/api/v1/logged-in", methods=["GET"])
 def logged_in():
-    print(session['id'])
-    print(session)
-    if 'id' in session:
+    if 'id' not in session:
+        session['id'] = "0"
+    if session['id'] != "0":
         cursor = mysql.connection.cursor()
-        cursor.execute("SELECT * FROM employees WHERE employees_id = %s",  session['id'])
+        cursor.execute("SELECT employees_permissions FROM employees WHERE employees_id = %s",  [session['id']])
         account = cursor.fetchone()
         if account:
-            return jsonify("User logged in via cookie")
+            return jsonify(account)
         else:
-            return jsonify("Something is Wrong")
+            return("No account Found")
     else:
-        return "nope"
+        return "No Cookie Set"
+
+@app.route("/api/v1/logout", methods=["POST"])
+def logout():
+    session.pop("id", None)
+    return jsonify("Logged out")
 
 @app.route('/clients', methods=['GET'])
 def clients():
