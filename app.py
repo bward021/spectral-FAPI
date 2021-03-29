@@ -1,4 +1,5 @@
 import os
+from MySQLdb import cursors
 import bcrypt
 from flask import Flask,render_template, request, jsonify, session, make_response
 from flask_mysqldb import MySQL
@@ -365,6 +366,19 @@ def add_employee():
     data = cursor.fetchall()
     cursor.close()
     return (jsonify(data))
+
+@app.route("/client/frequency-graph/<id>")
+def collect_data_for_frequency_graph(id):
+    id=id
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT frequency_id FROM frequency WHERE frequency_client_id = %s ORDER BY frequency_id DESC;", (id))
+    frequency_id = cursor.fetchone()
+    cursor.close()
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT frequency_instance_data, frequency_instance_date FROM frequency_instance WHERE frequency_instance_frequency_id = %s ORDER BY frequency_instance_id DESC LIMIT 4;", [frequency_id['frequency_id']])
+    data = cursor.fetchall()
+    cursor.close()
+    return(jsonify(data))
 
 if __name__ == '__main__':
     app.run(debug=True)
