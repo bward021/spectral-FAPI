@@ -371,7 +371,7 @@ def add_employee():
 def collect_data_for_frequency_graph(id):
     id=id
     cursor = mysql.connection.cursor()
-    cursor.execute("SELECT frequency_id FROM frequency WHERE frequency_client_id = %s ORDER BY frequency_id DESC;", (id))
+    cursor.execute("SELECT frequency_id FROM frequency WHERE frequency_client_id = %s ORDER BY frequency_id DESC;", [id])
     frequency_id = cursor.fetchone()
     cursor.close()
     cursor = mysql.connection.cursor()
