@@ -1,7 +1,6 @@
 import os
-from MySQLdb import cursors
 import bcrypt
-from flask import Flask,render_template, request, jsonify, session, make_response
+from flask import Flask,render_template, request, jsonify, session
 from flask_mysqldb import MySQL
 from flask_cors import CORS
 from datetime import timedelta
@@ -10,10 +9,10 @@ app = Flask(__name__)
 CORS(app, supports_credentials=True)
 app.secret_key = os.environ.get('SECRET_KEY') or "secret"
  
-app.config['MYSQL_HOST'] = os.environ.get('MY_HOST') or 'localhost'
-app.config['MYSQL_USER'] = os.environ.get('USERNAME') or 'root'
-app.config['MYSQL_PASSWORD'] = os.environ.get('CLEARDB_PASSWORD') or os.environ.get("PASSWORD")
-app.config['MYSQL_DB'] = os.environ.get('MY_DB') or 'spectral'
+app.config['MYSQL_HOST'] = 'localhost' #os.environ.get('MY_HOST') or 'localhost'
+app.config['MYSQL_USER'] = 'root' #os.environ.get('USERNAME') or 'root'
+app.config['MYSQL_PASSWORD'] = os.environ.get("PASSWORD") #os.environ.get('CLEARDB_PASSWORD') or os.environ.get("PASSWORD")
+app.config['MYSQL_DB'] = 'spectral' #os.environ.get('MY_DB') or 'spectral'
 
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 app.config['SESSION_COOKIE_SECURE'] = True
