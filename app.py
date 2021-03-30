@@ -20,7 +20,7 @@ app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'None'
 
-app.permanent_session_lifetime = timedelta(minutes=20)
+app.permanent_session_lifetime = timedelta(hours=24)
  
 mysql = MySQL(app)
 @app.route('/')
