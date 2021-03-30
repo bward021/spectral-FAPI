@@ -1,6 +1,7 @@
 import os
+from MySQLdb import cursors
 import bcrypt
-from flask import Flask,render_template, request, jsonify, session
+from flask import Flask,render_template, request, jsonify, session, make_response
 from flask_mysqldb import MySQL
 from flask_cors import CORS
 from datetime import timedelta
@@ -50,19 +51,19 @@ def login():
     cursor = mysql.connection.cursor()
     cursor.execute("SELECT employees_id, employees_permissions, employees_password FROM employees WHERE employees_email = %s",[ username['username'] ])
     account = cursor.fetchone()
-    data = {
-        "id": account["employees_id"],
-        "permissions": account["employees_permissions"]
-    }
     if account:
+        data = {
+            "id": account["employees_id"],
+            "permissions": account["employees_permissions"]
+        }
         session.permanent = True
         session['id'] = data['id']
-    c_password = password["password"]
-    password_check = c_password.encode(encoding = "UTF-8")
-    stored_password = account["employees_password"]
-    stored_password_check = stored_password.encode(encoding = "UTF-8")
-    if bcrypt.checkpw(password_check, stored_password_check):
-        return(data)
+        c_password = password["password"]
+        password_check = c_password.encode(encoding = "UTF-8")
+        stored_password = account["employees_password"]
+        stored_password_check = stored_password.encode(encoding = "UTF-8")
+        if bcrypt.checkpw(password_check, stored_password_check):
+            return(data)
     else:
         return("Incorrect Username or Password")
 
