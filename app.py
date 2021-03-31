@@ -375,10 +375,12 @@ def collect_data_for_frequency_graph(id):
     frequency_id = cursor.fetchone()
     cursor.close()
     cursor = mysql.connection.cursor()
-    cursor.execute("SELECT frequency_instance_data, frequency_instance_date FROM frequency_instance WHERE frequency_instance_frequency_id = %s ORDER BY frequency_instance_id DESC LIMIT 4;", [frequency_id['frequency_id']])
+    cursor.execute("SELECT frequency_instance_data, frequency_instance_date FROM frequency_instance WHERE frequency_instance_frequency_id = %s ORDER BY frequency_instance_id DESC LIMIT 4;", [frequency_id])
     data = cursor.fetchall()
     cursor.close()
-    return(jsonify(data))
-
+    if data:
+        return(jsonify(data))
+    else:
+        return "no frequency found"
 if __name__ == '__main__':
     app.run(debug=True)
