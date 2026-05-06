@@ -298,6 +298,38 @@ def update_trial_instance_correct():
         db.session.commit()
     return jsonify("Updated")
 
+@app.route("/edit-trial/<id>", methods=['PATCH'])
+def edit_trial(id):
+    trial = Trial.query.filter_by(trial_id=id).first()
+    if not trial:
+        return jsonify("Trial not found"), 404
+    
+    data = request.get_json()
+    trial.trial_name = data.get('name', trial.trial_name)
+    trial.trial_category = data.get('category', trial.trial_category)
+    trial.trial_description = data.get('description', trial.trial_description)
+    
+    db.session.commit()
+    
+    return jsonify({
+        "trial_id": trial.trial_id,
+        "trial_name": trial.trial_name,
+        "trial_category": trial.trial_category,
+        "trial_description": trial.trial_description
+    })
+
+
+@app.route("/delete-trial/<id>", methods=['DELETE'])
+def delete_trial(id):
+    trial = Trial.query.filter_by(trial_id=id).first()
+    if not trial:
+        return jsonify("Trial not found"), 404
+    
+    db.session.delete(trial)
+    db.session.commit()
+    
+    return jsonify("Trial deleted")
+
 # ── Frequency Routes ─────────────────────────────────────────────────────────
 
 @app.route("/add-client-frequency/<id>", methods=['POST'])
@@ -400,6 +432,25 @@ def new_duration_instance():
     return jsonify("Added")
 
 # ── Employee Routes ──────────────────────────────────────────────────────────
+
+@app.route("/setup-admin", methods=['GET'])
+def setup_admin():
+    # Check if admin already exists
+    existing = Employee.query.filter_by(employees_email="admin@spectral.com").first()
+    if existing:
+        return jsonify("Admin already exists"), 400
+    
+    hashed = bcrypt.hashpw("admin123".encode('UTF-8'), bcrypt.gensalt())
+    new_employee = Employee(
+        employees_first_name="Admin",
+        employees_last_name="User",
+        employees_email="admin@spectral.com",
+        employees_password=hashed,
+        employees_permissions="Admin"
+    )
+    db.session.add(new_employee)
+    db.session.commit()
+    return jsonify("Admin created successfully")
 
 @app.route("/get-all-employees", methods=['GET'])
 def get_all_employees():
